@@ -2,5 +2,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.morningstar.arcturus</groupId>
   <artifactId>arcturus</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
+  <dependencies>
+     <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+         <version>1.2.9</version>
+     </dependency>
+   </dependencies>
 </project>
