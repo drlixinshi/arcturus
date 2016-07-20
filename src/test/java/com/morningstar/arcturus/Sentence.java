@@ -28,8 +28,8 @@ public class Sentence {
 		Matcher m = patSent.matcher(line);
 		if (!m.find()) return;
 		lab = m.group(2);
-		cmd = m.group(4);
-		expr = m.group(6);
+		cmd = replaceSpecialChars(m.group(4));
+		expr = replaceSpecialChars(m.group(6));
 		act1 = m.group(8);
 		act2 = m.group(10);
 		note = m.group(12);
@@ -57,10 +57,14 @@ public class Sentence {
 		}
 	}
 
+	public String replaceSpecialChars(String str) {
+		return str.replace("&nbsp;", "\u00a0").replace("&lt;", "<").replace("&gt;", "<").replace("&amp;", "&");
+	}
+
 	@Override
 	public String toString() {
-		return String.format("%s\t<%s> %s|%s %s 1:%s 2:%s o:%d\t%s", lab == null ? "" : (lab + ":"), cmd, cmdTarget,
-				cmdValue, expr == null ? "" : ("[" + expr + "]"), act1, act2, tmout,
-				note == null ? "" : ("(" + note + ")"));
+		return String.format("%s\t<%s> %s%s %s 1:%s 2:%s/%d %s", lab == null ? "" : (lab + ":"), cmd, cmdTarget,
+				cmdValue == null ? "" : "|" + cmdValue, expr == null || expr.length() == 0 ? "" : ("[" + expr + "]"),
+				act1, act2, tmout, note == null || note.length() == 0 ? "" : ("(" + note + ")"));
 	}
 }

@@ -13,7 +13,7 @@ import com.morningstar.arcturus.Arcturus;
 import com.morningstar.arcturus.TestResult;
 import com.morningstar.automation.base.core.utils.Logger;
 
-public class Example1 {
+public class Example2 {
 	private String currentPackage = this.getClass().getCanonicalName()
 			.replaceAll("\\." + this.getClass().getSimpleName() + "$", "");
 	private static final Logger LOGGER = Logger.getLogger(Example1.class);
@@ -26,7 +26,7 @@ public class Example1 {
 		variables.put("Lang", "en");
 		variables.put("UserName", "Lixin");
 		Arcturus arcturus = new Arcturus(new FirefoxDriver(), variables, currentPackage, LOGGER);
-		String tpName = "MStarCA.Home()";
+		String tpName = "w3schools.IFrame()";
 		TestResult result = arcturus.runTestProc(method.getName(), tpName);
 		new SoftAssert().assertEquals(result, TestResult.PASS);
 	}

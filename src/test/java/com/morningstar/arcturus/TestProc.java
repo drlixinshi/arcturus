@@ -65,6 +65,8 @@ public class TestProc {
 			current = labelMap.get(label);
 			label = null;
 		}
-		return sent.get(current++);
+		Sentence s = sent.get(current++);
+		if (s.lab != null && s.lab.startsWith("#")) return getSentence();
+		return s;
 	}
 }
