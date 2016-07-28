@@ -28,7 +28,9 @@ public class Example2 {
 		Arcturus arcturus = new Arcturus(new FirefoxDriver(), variables, currentPackage, LOGGER);
 		String tpName = "w3schools.IFrame()";
 		TestResult result = arcturus.runTestProc(method.getName(), tpName);
-		new SoftAssert().assertEquals(result, TestResult.PASS);
+		SoftAssert soft = new SoftAssert();
+		soft.assertEquals(result, TestResult.PASS);
+		soft.assertAll();
 	}
 
 }

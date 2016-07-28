@@ -69,4 +69,8 @@ public class TestProc {
 		if (s.lab != null && s.lab.startsWith("#")) return getSentence();
 		return s;
 	}
+
+	public String getStepInfo() {
+		return String.format("%s #%d", name, current);
+	}
 }

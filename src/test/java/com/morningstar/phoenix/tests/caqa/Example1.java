@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.Test;
-import org.testng.asserts.SoftAssert;
 
 import com.morningstar.arcturus.Arcturus;
 import com.morningstar.arcturus.TestResult;
@@ -28,7 +28,7 @@ public class Example1 {
 		Arcturus arcturus = new Arcturus(new FirefoxDriver(), variables, currentPackage, LOGGER);
 		String tpName = "MStarCA.Home()";
 		TestResult result = arcturus.runTestProc(method.getName(), tpName);
-		new SoftAssert().assertEquals(result, TestResult.PASS);
+		Assert.assertEquals(result, TestResult.PASS);
 	}
 
 }

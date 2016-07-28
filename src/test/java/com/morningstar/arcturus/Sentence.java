@@ -1,5 +1,7 @@
 package com.morningstar.arcturus;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +26,31 @@ public class Sentence {
 	private static Pattern patSet = Pattern.compile("^(ARRAY)?\\s*([^=\\s]+)\\s*=\\s*(.*)$");
 
 	// ...............................................1-----1.....2-----2.........3--3
+	@SuppressWarnings("serial")
+	static Map<String, String> Synonyms = new HashMap<String, String>() {
+		{
+			put("PushButton", "Click");
+		}
+	};
+
+	public Sentence clone() {
+		Sentence s = new Sentence();
+		s.lab = lab;
+		s.cmd = cmd;
+		s.expr = expr;
+		s.act1 = act1;
+		s.act2 = act2;
+		s.tmout = tmout;
+		s.note = note;
+		s.cmdTarget = cmdTarget;
+		s.cmdValue = cmdValue;
+		return s;
+	}
+
+	public Sentence() {
+
+	}
+
 	public Sentence(String line) {
 		Matcher m = patSent.matcher(line);
 		if (!m.find()) return;
@@ -55,6 +82,8 @@ public class Sentence {
 				cmdValue = m.group(3);
 			}
 		}
+
+		if (Synonyms.containsKey(cmd)) cmd = Synonyms.get(cmd);
 	}
 
 	public String replaceSpecialChars(String str) {
@@ -63,8 +92,10 @@ public class Sentence {
 
 	@Override
 	public String toString() {
-		return String.format("%s\t<%s> %s%s %s 1:%s 2:%s/%d %s", lab == null ? "" : (lab + ":"), cmd, cmdTarget,
-				cmdValue == null ? "" : "|" + cmdValue, expr == null || expr.length() == 0 ? "" : ("[" + expr + "]"),
-				act1, act2, tmout, note == null || note.length() == 0 ? "" : ("(" + note + ")"));
+		return String.format("%s\t<%s> %s%s %s 1:%s 2:%s/%d", lab == null || lab.isEmpty() ? "" : (lab + ":"), cmd,
+				cmdTarget, cmdValue == null ? "" : "|" + cmdValue,
+				expr == null || expr.length() == 0 ? "" : ("[" + expr + "]"), act1, act2, tmout
+		// , note == null || note.length() == 0 ? "" : ("(" + note + ")")
+		);
 	}
 }
