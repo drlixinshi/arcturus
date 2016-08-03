@@ -3,6 +3,7 @@ package com.tests.caqa;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.arcturus.Arcturus;
@@ -26,11 +27,13 @@ public class TcExample1 {
 		variables.put("Passwd", "rock1234");
 		variables.put("Lang", "en");
 		variables.put("UserName", "Lixin");
-		Arcturus arcturus = new Arcturus(new FirefoxDriver(), variables, currentPackage);
+		WebDriver driver = new FirefoxDriver();
+		Arcturus arcturus = new Arcturus(driver, variables, currentPackage);
 		Object[] params = new Object[] { "Example_001" };
 		arcturus.setCallback(LOGGER, "printToFile", params);
 		String tpName = "MStarCA.Home()";
 		TestResult result = arcturus.runTestProc(tpName);
+		driver.quit();
 		Assert.assertEquals(result, TestResult.PASS);
 	}
 }
