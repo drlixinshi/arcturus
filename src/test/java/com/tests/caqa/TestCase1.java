@@ -1,4 +1,4 @@
-package com.phoenix.tests.caqa;
+package com.tests.caqa;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,4 +37,3 @@ public class TestCase1 {
 		Assert.assertEquals(result, TestResult.PASS);
 	}
 }
-
