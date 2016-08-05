@@ -30,6 +30,7 @@ public class Sentence {
 	static Map<String, String> Synonyms = new HashMap<String, String>() {
 		{
 			put("PushButton", "Click");
+			put("SendKeys","Input");
 		}
 	};
 
@@ -87,7 +88,7 @@ public class Sentence {
 	}
 
 	public String replaceSpecialChars(String str) {
-		return str.replace("&nbsp;", "\u00a0").replace("&lt;", "<").replace("&gt;", "<").replace("&amp;", "&");
+		return str.replace("&nbsp;", "\u00a0").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
 	}
 
 	@Override

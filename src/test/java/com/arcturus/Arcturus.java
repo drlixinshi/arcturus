@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import com.arcturus.TestResult;
+import com.arcturus.Sentence;
 
 public class Arcturus {
 
@@ -25,25 +27,23 @@ public class Arcturus {
 	}
 
 	private void callbackLogger(String msg) {
-		if (callbackObject == null) return;
+		if (callbackObject == null)
+			return;
 		try {
 			java.lang.reflect.Method method;
 			if (callbackParams == null || callbackParams.length == 0) {
 				method = callbackObject.getClass().getDeclaredMethod(callbackMethod, String.class);
 				method.invoke(callbackObject, msg);
-			}
-			else if (callbackParams.length == 1) {
+			} else if (callbackParams.length == 1) {
 				method = callbackObject.getClass().getDeclaredMethod(callbackMethod, callbackParams[0].getClass(),
 						String.class);
 				method.invoke(callbackObject, callbackParams[0], msg);
-			}
-			else if (callbackParams.length >= 2) {
+			} else if (callbackParams.length >= 2) {
 				method = callbackObject.getClass().getDeclaredMethod(callbackMethod, callbackParams[0].getClass(),
 						callbackParams[1].getClass(), String.class);
 				method.invoke(callbackObject, callbackParams[0], callbackParams[1], msg);
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 
 		}
 	}
@@ -76,16 +76,69 @@ public class Arcturus {
 
 	@SuppressWarnings("unused")
 	private TestResult cmdClearTypeKeys(Sentence sent) {
-		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
-		if (element == null) return TestResult.theTestResult(sent.act2);
-		element.sendKeys(sent.cmdValue);
-		return TestResult.theTestResult(sent.act1);
-	}
+		try {
+			// // take off the brackets
+			// sent.cmdTarget = sent.cmdTarget.replaceAll("^\\(|\\)$", "");
+			// // System.out.println("!!!!!!!!!!!!" + sent.cmdTarget);
+			WebElement e = myDriver.getElement(sent.cmdTarget, sent.tmout);
+			e.clear();
+			// WebElement element = findByXPath(sent.cmdTarget);
 
+			if (sent.cmdValue.indexOf("{") >= 0) {
+				sent.cmdValue = replaceVariable(sent.cmdValue);
+				sent.cmdValue = sent.cmdValue.replace("\"", "");
+				System.out.println("hereherehere" + sent.cmdValue);
+			}
+
+			for (int i = 0; i < sent.cmdValue.length(); i++) {
+				char k = sent.cmdValue.charAt(i);
+				String m = Character.toString(k);
+				System.out.println("Print charac: " + m);
+				e.sendKeys(m);
+				Thread.sleep(100);
+			}
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return TestResult.FAIL;
+		}
+		return TestResult.CONT;
+	}
+	@SuppressWarnings("unused")
+	private TestResult cmdClickIfExist(Sentence sent) {
+		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
+		if (element == null) {
+			return TestResult.theTestResult(sent.act2);
+		}
+		else {
+			element.click();
+			return TestResult.theTestResult(sent.act1);
+		}
+	}
+	@SuppressWarnings("unused")
+	private TestResult cmdINC(Sentence sent) {
+		if (variables.containsKey(sent.cmdTarget)) {
+			int j = Integer.parseInt(variables.get(sent.cmdTarget).toString());
+			variables.replace(sent.cmdTarget.trim(), j + 1);
+			System.out.println("@@@@: " + variables.get(sent.cmdTarget));
+			return TestResult.CONT;
+		} else
+			return TestResult.FAIL;
+	}
 	@SuppressWarnings("unused")
 	private TestResult cmdClearSendKeys(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
-		if (element == null) return TestResult.theTestResult(sent.act2);
+		if (element == null)
+			return TestResult.theTestResult(sent.act2);
+		element.clear();
+		element.sendKeys(sent.cmdValue);
+		return TestResult.theTestResult(sent.act1);
+	}
+	@SuppressWarnings("unused")
+	private TestResult cmdInput(Sentence sent) {
+		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
+		if (element == null)
+			return TestResult.theTestResult(sent.act2);
 		element.sendKeys(sent.cmdValue);
 		return TestResult.theTestResult(sent.act1);
 	}
@@ -93,7 +146,8 @@ public class Arcturus {
 	@SuppressWarnings("unused")
 	private TestResult cmdClick(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
-		if (element == null) return TestResult.theTestResult(sent.act2);
+		if (element == null)
+			return TestResult.theTestResult(sent.act2);
 		element.click();
 		return TestResult.theTestResult(sent.act1);
 	}
@@ -101,14 +155,14 @@ public class Arcturus {
 	@SuppressWarnings("unused")
 	private TestResult cmdVerifyContent(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
-		if (element == null) return TestResult.theTestResult(sent.act2);
+		if (element == null)
+			return TestResult.theTestResult(sent.act2);
 		String text = element.getText();
 		callbackLogger("\t$1 <- " + text);
 		try {
 			if (sent.expr == null || sent.expr.isEmpty() || Pattern.compile(sent.expr).matcher(text).find())
 				return TestResult.theTestResult(sent.act1);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println("** Ex:" + e.getMessage());
 			return TestResult.BLOCK;
 		}
@@ -123,6 +177,50 @@ public class Arcturus {
 
 	@SuppressWarnings("unused")
 	private TestResult cmdIF(Sentence sent) {
+		try {
+			if (sent.cmdTarget.contains("=")) {
+				System.out.println("IF statement by =");
+				String[] variableCompare = sent.cmdTarget.split("==");
+				String variable = variableCompare[0];
+				String expect = variableCompare[1];
+				variable = replaceVariable(variable);
+				String zz = variable.equals(expect) ? sent.act1 : sent.act2;
+				TestResult x = TestResult.theTestResult(zz);
+				System.out.println("+++" + zz + ".." + x);
+				return x;
+			} else if (sent.cmdTarget.contains(">")) {
+				System.out.println("IF statement by >");
+				String[] variableCompare = sent.cmdTarget.split(">");
+				System.out.println(variableCompare[0]);
+				String variable = variableCompare[0];
+				System.out.println(variableCompare[1]);
+				String expect = variableCompare[1];
+				System.out.println(variables.toString());
+
+				expect = replaceVariable(expect);
+				System.out.println(expect);
+
+				variable = replaceVariable(variable);
+				System.out.println(variable);
+				String zz = (Integer.parseInt(variable) > Integer.parseInt(expect)) ? sent.act1 : sent.act2;
+				TestResult x = TestResult.theTestResult(zz);
+				return x;
+			} else if (sent.cmdTarget.contains("<")) {
+				System.out.println("IF statement by <");
+				String[] variableCompare = sent.cmdTarget.split("&lt;");
+				String variable = variableCompare[0];
+				String expect = variableCompare[1];
+				expect = replaceVariable(expect);
+				variable = replaceVariable(variable);
+				String zz = (Integer.parseInt(variable) < Integer.parseInt(expect)) ? sent.act1 : sent.act2;
+				TestResult x = TestResult.theTestResult(zz);
+				return x;
+
+			}
+		} catch (Exception e) {
+			return TestResult.FAIL;
+		}
+		System.out.println("Not here");
 		return TestResult.CONT;
 	}
 
@@ -143,7 +241,8 @@ public class Arcturus {
 
 	public void resetVars(HashSet<String> set) {
 		for (String key : variables.keySet())
-			if (!key.startsWith("$") && !set.contains(key)) variables.remove(key);
+			if (!key.startsWith("$") && !set.contains(key))
+				variables.remove(key);
 	}
 
 	public TestResult runTestProc(String tpName) {
@@ -152,29 +251,25 @@ public class Arcturus {
 		Pattern pat = Pattern.compile("^([\\w\\.]+)\\s*\\((.*)\\)\\s*$");
 		// ..............................1---------1.......2--2........
 		Matcher m = pat.matcher(tpName);
-		if (!m.find()) return result;
+		if (!m.find())
+			return result;
 		String xml;
 		tpName = m.group(1);
 		try {
 			xml = (String) Class.forName(pkg + ".testproc." + m.group(1)).getDeclaredField("xml").get(null);
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			callbackLogger("Exception: " + e.getMessage());
 			return result;
-		}
-		catch (IllegalAccessException e) {
+		} catch (IllegalAccessException e) {
 			callbackLogger("Exception: " + e.getMessage());
 			return result;
-		}
-		catch (NoSuchFieldException e) {
+		} catch (NoSuchFieldException e) {
 			callbackLogger("Exception: " + e.getMessage());
 			return result;
-		}
-		catch (SecurityException e) {
+		} catch (SecurityException e) {
 			callbackLogger("Exception: " + e.getMessage());
 			return result;
-		}
-		catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			callbackLogger("Exception: " + e.getMessage());
 			return result;
 		}
@@ -184,37 +279,42 @@ public class Arcturus {
 		while ((s = tp.getSentence()) != null) {
 			long t0 = System.nanoTime();
 			callbackLogger(String.format("%s\t%s", tp.getStepInfo(), s.note));
-			if (s.cmd == null) continue;
+			if (s.cmd == null)
+				continue;
 			s = s.clone();
-			if (s.cmdTarget != null) s.cmdTarget = replaceVariable(s.cmdTarget);
-			if (s.cmdValue != null) s.cmdValue = replaceVariable(s.cmdValue);
-			if (s.expr != null) s.expr = replaceVariable(s.expr);
-			if (s.note != null) s.note = replaceVariable(s.note);
-			// System.out.println(String.format("===>%s\t%s\t%s", s.cmd, s.cmdTarget, s.cmdValue));
-			if (s.cmd == null || s.cmd.length() == 0) result = TestResult.CONT;
+			if (s.cmdTarget != null)
+				s.cmdTarget = replaceVariable(s.cmdTarget);
+			if (s.cmdValue != null)
+				s.cmdValue = replaceVariable(s.cmdValue);
+			if (s.expr != null)
+				s.expr = replaceVariable(s.expr);
+			if (s.note != null)
+				s.note = replaceVariable(s.note);
+			// System.out.println(String.format("===>%s\t%s\t%s", s.cmd,
+			// s.cmdTarget, s.cmdValue));
+			if (s.cmd == null || s.cmd.length() == 0)
+				result = TestResult.CONT;
 			else if (s.cmd.equals("CALL")) {
 				// HashSet<String> set = getVarSet();
 				result = runTestProc(
 						s.cmdTarget.matches("\\w+\\.\\w+.*") ? s.cmdTarget : (tp.getPackage() + "." + s.cmdTarget));
-				// resetVars(set); // Variables defined in sub-testproc will be removed
-				if (result.equals(TestResult.PASS)) result = TestResult.CONT;
-			}
-			else {
+				// resetVars(set); // Variables defined in sub-testproc will be
+				// removed
+				if (result.equals(TestResult.PASS))
+					result = TestResult.CONT;
+			} else {
 				java.lang.reflect.Method method;
 				try {
 					method = this.getClass().getDeclaredMethod("cmd" + s.cmd, Sentence.class);
 					method.setAccessible(true);
 					result = (TestResult) method.invoke(this, s);
-				}
-				catch (NoSuchMethodException e) {
+				} catch (NoSuchMethodException e) {
 					callbackLogger("Exception: " + e.getMessage());
 					result = TestResult.BLOCK;
-				}
-				catch (SecurityException e) {
+				} catch (SecurityException e) {
 					callbackLogger("Exception: " + e.getMessage());
 					result = TestResult.BLOCK;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					callbackLogger("Exception: " + e.getMessage());
 					result = TestResult.BLOCK;
 				}
@@ -225,13 +325,15 @@ public class Arcturus {
 					? String.format("%s\t=> %s (%.2fs)", s, result.getResult(), (t1 - t0) / 1000000000.0)
 					: String.format("%s\t=> %s", s, result.getResult()));
 
-			if (result.isTeminate()) break;
+			if (result.isTeminate())
+				break;
 			if (result.isGoto()) {
 				tp.setLabel(result.getLabel());
 				continue;
 			}
 		}
-		if (result.equals(TestResult.CONT)) result = TestResult.PASS;
+		if (result.equals(TestResult.CONT))
+			result = TestResult.PASS;
 		callbackLogger("== End of " + m.group(1));
 		return result;
 	}
@@ -244,7 +346,8 @@ public class Arcturus {
 		Matcher match = p.matcher(str);
 		if (match.find()) {
 			String val = match.group(1);
-			if (variables.containsKey(val)) ss = variables.get(val).toString();
+			if (variables.containsKey(val))
+				ss = variables.get(val).toString();
 			return replaceVariable(str.replace(match.group(0), ss));
 		}
 		return str;
@@ -253,8 +356,7 @@ public class Arcturus {
 	private void sleep(int millis) {
 		try {
 			Thread.sleep(millis);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			;
 		}
 	}
