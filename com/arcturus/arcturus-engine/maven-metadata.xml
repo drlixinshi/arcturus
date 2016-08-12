@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.arcturus</groupId>
+  <artifactId>arcturus-engine</artifactId>
+  <versioning>
+    <versions>
+      <version>0.0.1-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20160812160800</lastUpdated>
+  </versioning>
+</metadata>
