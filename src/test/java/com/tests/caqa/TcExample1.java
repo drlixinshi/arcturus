@@ -10,8 +10,6 @@ import com.arcturus.Arcturus;
 import com.arcturus.TestResult;
 import com.tests.Logger;
 
-import junit.framework.Assert;
-
 public class TcExample1 {
 	private String currentPackage = this.getClass().getCanonicalName()
 			.replaceAll("\\." + this.getClass().getSimpleName() + "$", "");
@@ -34,6 +32,5 @@ public class TcExample1 {
 		String tpName = "MStarCA.Home()";
 		TestResult result = arcturus.runTestProc(tpName);
 		driver.quit();
-		Assert.assertEquals(result, TestResult.PASS);
 	}
 }
