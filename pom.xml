@@ -19,6 +19,17 @@
 		</dependency>
 	</dependencies>
 
+<repositories>
+<repository>
+<snapshots>
+<enabled>false</enabled>
+</snapshots>
+<id>com.arcturus</id>
+<name>selenium-java</name>
+<url>https://github.com/drlixinshi/arcturus/</url>
+</repository>
+</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
