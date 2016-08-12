@@ -104,17 +104,18 @@ public class Arcturus {
 		}
 		return TestResult.CONT;
 	}
+
 	@SuppressWarnings("unused")
 	private TestResult cmdClickIfExist(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
 		if (element == null) {
 			return TestResult.theTestResult(sent.act2);
-		}
-		else {
+		} else {
 			element.click();
 			return TestResult.theTestResult(sent.act1);
 		}
 	}
+
 	@SuppressWarnings("unused")
 	private TestResult cmdINC(Sentence sent) {
 		if (variables.containsKey(sent.cmdTarget)) {
@@ -125,6 +126,7 @@ public class Arcturus {
 		} else
 			return TestResult.FAIL;
 	}
+
 	@SuppressWarnings("unused")
 	private TestResult cmdClearSendKeys(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
@@ -134,6 +136,7 @@ public class Arcturus {
 		element.sendKeys(sent.cmdValue);
 		return TestResult.theTestResult(sent.act1);
 	}
+
 	@SuppressWarnings("unused")
 	private TestResult cmdInput(Sentence sent) {
 		WebElement element = myDriver.getElement(sent.cmdTarget, sent.tmout);
@@ -178,50 +181,30 @@ public class Arcturus {
 	@SuppressWarnings("unused")
 	private TestResult cmdIF(Sentence sent) {
 		try {
-			if (sent.cmdTarget.contains("=")) {
-				System.out.println("IF statement by =");
-				String[] variableCompare = sent.cmdTarget.split("==");
-				String variable = variableCompare[0];
-				String expect = variableCompare[1];
-				variable = replaceVariable(variable);
-				String zz = variable.equals(expect) ? sent.act1 : sent.act2;
-				TestResult x = TestResult.theTestResult(zz);
-				System.out.println("+++" + zz + ".." + x);
-				return x;
-			} else if (sent.cmdTarget.contains(">")) {
-				System.out.println("IF statement by >");
-				String[] variableCompare = sent.cmdTarget.split(">");
-				System.out.println(variableCompare[0]);
-				String variable = variableCompare[0];
-				System.out.println(variableCompare[1]);
-				String expect = variableCompare[1];
-				System.out.println(variables.toString());
-
-				expect = replaceVariable(expect);
-				System.out.println(expect);
-
-				variable = replaceVariable(variable);
-				System.out.println(variable);
-				String zz = (Integer.parseInt(variable) > Integer.parseInt(expect)) ? sent.act1 : sent.act2;
+			if (sent.cmdTarget.contains("OR")) {
+				String[] variableCompare = sent.cmdTarget.split("OR");
+				for (int i = 0; i < variableCompare.length; i++) {
+					variableCompare[i] = checkBoolean(variableCompare[i]);
+					System.out.println("!!!!!!!!" + variableCompare[i]);
+				}
+				String zz = variableCompare.toString().contains("true") ? sent.act1 : sent.act2;
 				TestResult x = TestResult.theTestResult(zz);
 				return x;
-			} else if (sent.cmdTarget.contains("<")) {
-				System.out.println("IF statement by <");
-				String[] variableCompare = sent.cmdTarget.split("&lt;");
-				String variable = variableCompare[0];
-				String expect = variableCompare[1];
-				expect = replaceVariable(expect);
-				variable = replaceVariable(variable);
-				String zz = (Integer.parseInt(variable) < Integer.parseInt(expect)) ? sent.act1 : sent.act2;
+			} else if (sent.cmdTarget.contains("AND")) {
+				String[] variableCompare = sent.cmdTarget.split("AND");
+				for (int i = 0; i < variableCompare.length; i++) {
+					variableCompare[i] = checkBoolean(variableCompare[i]);
+				}
+				String zz = variableCompare.toString().contains("false") ? sent.act2 : sent.act1;
 				TestResult x = TestResult.theTestResult(zz);
 				return x;
-
 			}
 		} catch (Exception e) {
 			return TestResult.FAIL;
 		}
 		System.out.println("Not here");
 		return TestResult.CONT;
+
 	}
 
 	@SuppressWarnings("unused")
@@ -338,6 +321,58 @@ public class Arcturus {
 		return result;
 	}
 
+	private String checkBoolean(String str) {
+		str = replaceVariable(str);
+		str = replaceBoolean(str);
+		if (!str.equals("false") || !str.equals("true")) {
+			Pattern p = Pattern.compile("([^=<>!]+)(==|=|!=|>|<|>=|<=)(.+)");
+			//---------------------------1---------1-2-----------------2-3-3
+			Matcher match = p.matcher(str);
+			if (match.find()) {
+				System.out.println("HEHEHEH"+match.group(1)+ "eee"+match.group(3));
+				switch (match.group(2)) {
+				case "==":
+					if (match.group(1).trim().equals(match.group(3).trim()))
+						return "true";
+					else
+						return "false";
+				case "=":
+					
+					if (match.group(1).trim().equals(match.group(3).trim()))
+						return "true";
+					else
+						return "false";
+				case "!=":
+					if (match.group(1).trim().equals(match.group(3).trim()))
+						return "false";
+					else
+						return "true";
+				case ">":
+					if (Integer.parseInt(match.group(1).trim()) > (Integer.parseInt(match.group(3).trim())))
+						return "true";
+					else
+						return "false";
+				case "<":
+					if (Integer.parseInt(match.group(1).trim()) < (Integer.parseInt(match.group(3).trim())))
+						return "true";
+					else
+						return "false";
+				case "<=":
+					if (Integer.parseInt(match.group(1).trim()) <= (Integer.parseInt(match.group(3).trim())))
+						return "true";
+					else
+						return "false";
+				case ">=":
+					if (Integer.parseInt(match.group(1).trim()) >= (Integer.parseInt(match.group(3).trim())))
+						return "true";
+					else
+						return "false";
+				}
+			}
+		}
+		return str;
+	}
+
 	private String replaceVariable(String str) {
 		String ss = "!Err";
 		Pattern p = Pattern.compile("\\{(\\$\\d+|\\$*\\w+|\\w+[\\.\\w]*)\\}");
@@ -350,6 +385,28 @@ public class Arcturus {
 				ss = variables.get(val).toString();
 			return replaceVariable(str.replace(match.group(0), ss));
 		}
+		return str;
+	}
+
+	private String replaceBoolean(String str) {
+		Pattern p2 = Pattern.compile("\\$(NotDef|Def)\\((.+)\\)");
+		Matcher match2 = p2.matcher(str);
+		if (match2.find()) {
+			if (match2.group(1).equals("Def")) {
+				if (variables.containsKey(match2.group(2))) {
+					return "true";
+				}
+				;
+				return "false";
+			} else {
+				if (variables.containsKey(match2.group(2))) {
+					return "false";
+				}
+				;
+				return "true";
+			}
+		}
+
 		return str;
 	}
 
