@@ -7,8 +7,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.arcturus.Arcturus;
+import com.arcturus.Logger;
 import com.arcturus.TestResult;
-import com.tests.Logger;
 
 public class TcExample1 {
 	private String currentPackage = this.getClass().getCanonicalName()
